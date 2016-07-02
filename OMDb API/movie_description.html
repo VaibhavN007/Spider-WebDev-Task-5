@@ -1,0 +1,309 @@
+<html>
+<head>
+<style>
+center{
+	font-family:'Georgia';
+	font-size:21px;
+}
+
+#details_div,#desc_table{
+	border:1px solid #1898fd;
+	box-shadow:3px 3px 5px #1898fd;
+	width:700px;
+	padding:30px;
+	color:#000;
+	background-color:#ffffff;
+	font-family:'Georgia';
+	font-size:18px;
+	border-spacing:10px;
+	border-collapse:separate;
+}
+tr{
+	text-align:center;
+}
+td{
+	padding:5px;
+	font-family:'Georgia';
+	font-size:18px;
+}
+td button{
+	width:100px;
+	height:40px;
+	border:1px solid white;
+	background-color:#47dc09;
+	border-radius:20px;
+	color:white;
+	font-size:19px;
+	margin-left:20px;
+	margin-right:20px;
+}
+td button:focus{
+	outline:none;
+}
+select{
+	font-family:'Georgia';
+	font-size:17px;
+	height:40px;
+	width:120px;
+	border:1px solid white;
+	margin-left:20px;
+	padding:10px;
+}
+
+td input[type=text],input[type=number]{
+	font-family:'Georgia';
+	font-size:18px;
+	height:40px;
+	width:200px;
+	border:1px solid #cfd2ff;
+	margin-left:20px;
+	padding:10px;
+	color:blue;
+}
+input[type=radio]{
+	font-family:'Georgia';
+	font-size:15px;
+	height:20px;
+	width:20px;
+	margin:10px;
+}
+input[type=number]{
+	width:100px;
+}
+button:active{
+	position:relative;
+	background-color:#4afb00;
+	top:2px;
+}
+img{
+	margin:20px;
+}
+#det{
+	font-family:'Georgia';
+	font-size:20px;
+}
+</style>
+</head>
+<body>
+
+<center>
+
+	<h2>Online Movie Database</h2>
+		
+		Search by : 
+		<select id="search_by" name="search_by" onchange="search_method(this.value)">
+		<option value="title">TITLE</option>
+		<option value="imdb">IMDB ID</option>
+		</select>
+		<br><br>
+		
+	<form id="title_search" name="title_search" onsubmit="return false;">
+		<table id="details_div">
+		<tr>
+			<td>
+				<span id="title_span">Movie Name : <input type="text" id="movie_name" onchange="clear()"/></span>
+				<span id="id_span">IMDB ID : <input type="text" id="movie_id" onchange="clear()"/></span>
+			</td>
+		</tr>
+		
+		<tr>
+			<td>
+				Plot : 
+				<select id="plot" onchange="select_plot(this.value)">
+					<option value='short'>Short</option>
+					<option value='full' selected>Full</option>
+				</select>
+			</td>
+		</tr>
+		
+		<tr>
+			<td>
+				Type of Result(optional) : 
+					<select name="type" onchange="select_result(this.value)">
+						<option value="movie" selected>Movie</option>
+						<option value="series">Series</option>
+						<option value="episode">Episode</option>
+					</select>
+			</td>
+		</tr>
+		
+		<tr>
+			<td>
+				Year of Release(optional) : <input type="number" value="" onchange="select_year(this.value)"/>
+			</td>
+		</tr>
+		
+		<tr>
+			<td>
+				Include Rotten Tomatoes rating: 
+				<input type="radio" name="tomatoes" id='radio1' value="true" checked/>Yes
+				<input type="radio" name="tomatoes" id='radio2' value="false"/>No
+			</td>
+		<tr>
+		
+		<tr>
+			<td>
+				<button type="submit" id="search_btn" onclick="search();">Search</button>
+				<button type="reset">Reset</button><br><br>
+				<button type="button" onclick="location.replace('movie_comparision.html');" style="width:250px">Compare Movies</button>
+			</td>
+		</tr>
+		
+		</table>
+	</form>
+	
+	<span id="det"></span>
+	<br>
+	<img id="poster" src=""/>
+	
+</center>
+
+
+<script>
+
+var search_by = "title";
+
+var movie = "";
+var plot = "";
+var type = "";
+var year = "";
+var tomatoes = "";
+
+
+window.onload = function(){
+	document.getElementById('id_span').style.display='none';
+	plot='short';
+	type='movie';
+	year='';
+	tomatoes='true';
+	document.getElementById('movie_id').required=false;
+	document.getElementById('movie_name').required=true;
+	document.getElementById('poster').style.display='none';
+}
+
+function search_method(str){
+	if(str==="title"){
+	document.getElementById('id_span').style.display='none';
+	document.getElementById('title_span').style.display='block';
+	document.getElementById('movie_id').required=false;
+	document.getElementById('movie_name').required=true;
+	search_by = "title";
+	}
+	else{
+	document.getElementById('id_span').style.display='block';
+	document.getElementById('title_span').style.display='none';
+	document.getElementById('movie_id').required=true;
+	document.getElementById('movie_name').required=false;
+	search_by = "id";
+	}
+}
+
+
+function select_plot(str){
+	plot=str;
+}
+
+function select_result(str){
+	type=str;
+}
+
+function select_year(str){
+	year=str;
+}
+
+function clear(){
+	document.getElementById('det').innerHTML='';
+}
+function search(){
+
+if(search_by=='id'){
+	movie = document.getElementById('movie_id').value;
+}
+else{
+	movie = document.getElementById('movie_name').value;
+}
+
+
+var elmt = document.getElementsByTagName('center')[0];
+
+if(document.getElementById("radio1").checked)
+	tomatoes='true';
+if(document.getElementById("radio2").checked)
+	tomatoes='false';
+
+if(movie!="")
+{
+	
+	var xmlhttp = new XMLHttpRequest();
+	
+	xmlhttp.onreadystatechange = function()
+	{
+		if(xmlhttp.readyState == 4 && xmlhttp.status == 200)
+		{
+			var description = JSON.parse(xmlhttp.responseText);
+			
+			console.log(description['Title']);
+			
+			var desc_len = description.length;
+			
+			var is_table = document.getElementById("desc_table");
+			
+			if(is_table)
+			{
+				elmt.removeChild(is_table);
+			}
+			
+			
+			
+			var table = document.createElement("table");
+			
+			table.setAttribute("id","desc_table");
+			
+			var table_body = table.createTBody();
+			
+			var desc_name,desc_value;
+			
+			for(desc_name in description)
+			{
+				desc_value = description[desc_name];
+				
+				if(desc_name != 'Poster' && desc_name!='Response'){
+					var tr = table_body.insertRow();
+					
+					var name = tr.insertCell(0);
+					name.innerHTML = desc_name;
+					
+					var value = tr.insertCell(1);
+					value.innerHTML = desc_value;
+				}
+				
+			}
+			
+			if(description['Poster']!='N/A' && description['Poster']!=undefined)
+			{
+				document.getElementById('poster').style.display='block'
+				document.getElementById('poster').src=description['Poster'];
+				document.getElementById('poster').style.height="450px";
+				document.getElementById('poster').alt='Poster';			
+			}
+			else
+				document.getElementById('poster').style.display='none'
+				
+			elmt.appendChild(table);
+			document.getElementById('det').innerHTML = "";
+		}
+		else{
+			document.getElementById('det').innerHTML = "Fetching Data from the server"; 
+		}
+	};
+	
+	xmlhttp.open("GET","http://omdbapi.com?t="+movie+"&y="+year+"&type="+type+"&plot="+plot+"&tomatoes="+tomatoes,true);
+	xmlhttp.send();
+	
+}
+
+}///end of search()	function
+
+</script>
+</body>
+</html>
